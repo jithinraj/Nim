@@ -42,11 +42,9 @@
 - ``math.`mod` `` for floats now behaves the same as ``mod`` for integers
   (previously it used floor division like Python). Use ``math.floorMod`` for the old behavior.
 
-- For string inputs, ``unicode.isUpper`` and ``unicode.isLower`` now require a
-  second mandatory parameter ``skipNonAlpha``.
-
-- For string inputs, ``strutils.isUpperAscii`` and ``strutils.isLowerAscii`` now
-  require a second mandatory parameter ``skipNonAlpha``.
+- For string inputs, ``unicode.isUpper``, ``unicode.isLower``,
+  ``strutils.isUpperAscii``, and ``strutils.isLowerAscii`` now ignore
+  non-alphabetic characters.
 
 #### Breaking changes in the compiler
 

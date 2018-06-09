@@ -150,52 +150,26 @@ proc isSpaceAscii*(s: string): bool {.noSideEffect, procvar,
   ## characters and there is at least one character in `s`.
   isImpl isSpaceAscii
 
-template isCaseImpl(s, charProc, skipNonAlpha) =
-  var hasAtleastOneAlphaChar = false
+template isCaseImpl(s, charProc) =
+  var hasAtLeastOneAlphaChar = false
   if s.len == 0: return false
   for c in s:
-    if skipNonAlpha:
-      var charIsAlpha = c.isAlphaAscii()
-      if not hasAtleastOneAlphaChar:
-        hasAtleastOneAlphaChar = charIsAlpha
-      if charIsAlpha and (not charProc(c)):
-        return false
-    else:
-      if not charProc(c):
-        return false
-  return if skipNonAlpha: hasAtleastOneAlphaChar else: true
+    var charIsAlpha = c.isAlphaAscii()
+    if not hasAtLeastOneAlphaChar:
+      hasAtLeastOneAlphaChar = charIsAlpha
+    if charIsAlpha and (not charProc(c)):
+      return false
+  return hasAtLeastOneAlphaChar
 
-proc isLowerAscii*(s: string, skipNonAlpha: bool): bool =
-  ## Checks whether ``s`` is lower case.
-  ##
-  ## This checks ASCII characters only.
-  ##
-  ## If ``skipNonAlpha`` is true, returns true if all alphabetical
-  ## characters in ``s`` are lower case.  Returns false if none of the
-  ## characters in ``s`` are alphabetical.
-  ##
-  ## If ``skipNonAlpha`` is false, returns true only if all characters
-  ## in ``s`` are alphabetical and lower case.
-  ##
-  ## For either value of ``skipNonAlpha``, returns false if ``s`` is
-  ## an empty string.
-  isCaseImpl(s, isLowerAscii, skipNonAlpha)
+proc isLowerAscii*(s: string): bool =
+  ## Returns true if all alphabetical characters in ``s`` are *lowercase* and
+  ## there is at least one alphabetical character in ``s``, false otherwise.
+  isCaseImpl(s, isLowerAscii)
 
-proc isUpperAscii*(s: string, skipNonAlpha: bool): bool =
-  ## Checks whether ``s`` is upper case.
-  ##
-  ## This checks ASCII characters only.
-  ##
-  ## If ``skipNonAlpha`` is true, returns true if all alphabetical
-  ## characters in ``s`` are upper case.  Returns false if none of the
-  ## characters in ``s`` are alphabetical.
-  ##
-  ## If ``skipNonAlpha`` is false, returns true only if all characters
-  ## in ``s`` are alphabetical and upper case.
-  ##
-  ## For either value of ``skipNonAlpha``, returns false if ``s`` is
-  ## an empty string.
-  isCaseImpl(s, isUpperAscii, skipNonAlpha)
+proc isUpperAscii*(s: string): bool =
+  ## Returns true if all alphabetical characters in ``s`` are *uppercase* and
+  ## there is at least one alphabetical character in ``s``, false otherwise.
+  isCaseImpl(s, isUpperAscii)
 
 proc toLowerAscii*(c: char): char {.noSideEffect, procvar,
   rtl, extern: "nsuToLowerAsciiChar".} =
@@ -2547,32 +2521,30 @@ when isMainModule:
     doAssert(not isLowerAscii('&'))
     doAssert(not isLowerAscii(' '))
 
-    doAssert isLowerAscii("abcd", false)
-    doAssert(not isLowerAscii("33aa", false))
-    doAssert(not isLowerAscii("a b", false))
-
-    doAssert(not isLowerAscii("abCD", true))
-    doAssert isLowerAscii("33aa", true)
-    doAssert isLowerAscii("a b", true)
-    doAssert isLowerAscii("1, 2, 3 go!", true)
-    doAssert(not isLowerAscii(" ", true))
-    doAssert(not isLowerAscii("(*&#@(^#$ ", true)) # None of the string chars are alphabets
+    doAssert isLowerAscii("abcd")
+    doAssert(not isLowerAscii("abCD"))
+    doAssert isLowerAscii("33aa")
+    doAssert isLowerAscii("a b")
+    doAssert isLowerAscii("1, 2, 3 go!")
+    doAssert(not isLowerAscii(" "))
+    doAssert(not isLowerAscii("(*&#@(^#$ ")) # None of the string chars are alphabets
 
     doAssert isUpperAscii('A')
     doAssert(not isUpperAscii('b'))
     doAssert(not isUpperAscii('5'))
     doAssert(not isUpperAscii('%'))
 
-    doAssert isUpperAscii("ABC", false)
-    doAssert(not isUpperAscii("A#$", false))
-    doAssert(not isUpperAscii("A B", false))
-
-    doAssert(not isUpperAscii("AAcc", true))
-    doAssert isUpperAscii("A#$", true)
-    doAssert isUpperAscii("A B", true)
-    doAssert isUpperAscii("1, 2, 3 GO!", true)
-    doAssert(not isUpperAscii(" ", true))
-    doAssert(not isUpperAscii("(*&#@(^#$ ", true)) # None of the string chars are alphabets
+    doAssert isUpperAscii("ABC")
+    doAssert(not isUpperAscii(";"))
+    doAssert isUpperAscii("A;B")
+    doAssert isUpperAscii("A#$")
+    doAssert isUpperAscii("A B")
+    doAssert(not isUpperAscii("AAcc"))
+    doAssert isUpperAscii("A#$")
+    doAssert isUpperAscii("A B")
+    doAssert isUpperAscii("1, 2, 3 GO!")
+    doAssert(not isUpperAscii(" "))
+    doAssert(not isUpperAscii("(*&#@(^#$ ")) # None of the string chars are alphabets
 
     doAssert rsplit("foo bar", seps=Whitespace) == @["foo", "bar"]
     doAssert rsplit(" foo bar", seps=Whitespace, maxsplit=1) == @[" foo", "bar"]
@@ -2640,8 +2612,8 @@ bar
       doAssert s.endsWith('a') == false
       doAssert s.endsWith('\0') == false
 
-    #echo("strutils tests passed")
-
   nonStaticTests()
   staticTests()
   static: staticTests()
+
+  echo("strutils tests passed")
